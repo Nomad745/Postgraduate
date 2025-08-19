@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上海地区金融专硕对比工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --primary-light: #334155;
+            --primary-dark: #0f172a;
+            --accent-color: #3b82f6;
+            --accent-light: #60a5fa;
+            --accent-dark: #2563eb;
+
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-light: #94a3b8;
+            --text-white: #ffffff;
+
+            --glass-bg-primary: rgba(255, 255, 255, 0.08);
+            --glass-bg-secondary: rgba(255, 255, 255, 0.12);
+            --glass-bg-hover: rgba(255, 255, 255, 0.18);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-border-hover: rgba(255, 255, 255, 0.3);
+
+            --glass-shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --glass-shadow-medium: 0 12px 40px rgba(0, 0, 0, 0.4);
+            --glass-shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.5);
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 40px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 50%, var(--primary-light) 100%);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-navbar {
+            background: var(--glass-bg-secondary);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: var(--spacing-md) var(--spacing-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--glass-shadow-soft);
+        }
+
+        .nav-item {
+            color: var(--text-white);
+            text-decoration: none;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--glass-bg-hover);
+            color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .glass-container {
+            background: var(--glass-bg-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: var(--spacing-xxl);
+            margin: var(--spacing-lg);
+            box-shadow: var(--glass-shadow-medium);
+        }
+
+        .glass-card {
+            background: var(--glass-bg-primary);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: var(--spacing-lg);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--glass-shadow-soft);
+            position: relative;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--glass-shadow-strong);
+        }
+
+        .glass-card.selected {
+            transform: translateY(-2px);
+            border-width: 2px;
+            box-shadow: 0 0 0 2px var(--glass-border-hover), var(--glass-shadow-strong);
+        }
+
+        .check-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(59,130,246,0.15);
+            border: 1px solid rgba(59,130,246,0.8);
+            color: #93c5fd;
+            backdrop-filter: blur(6px);
+        }
+
+        .content-section {
+            background: var(--glass-bg-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--glass-shadow-soft);
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+            color: var(--text-white);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-intro {
+            max-width: 900px;
+            margin: 0 auto var(--spacing-lg);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 360px;
+            width: 100%;
+            max-width: 760px;
+            background: var(--glass-bg-secondary);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: var(--spacing-lg);
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.95));
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: var(--glass-bg-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 28px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--glass-shadow-medium);
+        }
+
+        @media (max-width: 768px) {
+            .chart-container { height: 320px; }
+            .glass-container { padding: var(--spacing-lg); margin: var(--spacing-sm); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="login-modal" class="login-overlay">
+        <div class="login-card">
+            <h2 class="text-2xl font-bold text-white mb-2 text-center">访问授权</h2>
+            <p class="text-sm text-gray-300 mb-6 text-center">请输入访问密码进入分析工具</p>
+            <div class="space-y-4">
+                <input id="password-input" type="password" placeholder="Password" class="w-full px-4 py-3 rounded-lg bg-slate-800/60 border border-slate-600/60 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="login-button" class="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold transition">进入</button>
+                <p id="error-message" class="text-red-400 text-sm mt-1"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="hidden">
+    <header class="glass-navbar">
+        <nav class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold text-white">上海地区金融专硕对比</div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#school-compare" class="nav-item">学校对比</a>
+                <a href="#subjects-intro" class="nav-item">科目介绍</a>
+                <a href="#mapping" class="nav-item">知识点映射</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <section id="school-compare" class="mb-12">
+            <h3 class="section-title">学校筛选与数据展示</h3>
+            <p class="section-intro">按层级选择学校进行横向对比。支持单击多选，所选学校将用于生成考试科目与参考书表格、学费柱状图、题型分值环形图，以及近三年分数线变化折线图。</p>
+
+            <div class="glass-container">
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-white mb-3">顶级名校</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="tier-top">
+                        <!-- dynamic cards -->
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-white mb-3">985</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="tier-985"></div>
+                </div>
+                <div class="mb-8">
+                    <h4 class="text-xl font-semibold text-white mb-3">211</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="tier-211"></div>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-white mb-3">其他</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6" id="tier-other"></div>
+                </div>
+            </div>
+
+            <div id="compare-results" class="space-y-10 mt-8 hidden">
+                <div class="content-section">
+                    <h4 class="text-2xl font-bold mb-4 text-center text-white">考试科目对比</h4>
+                    <div class="overflow-x-auto">
+                        <table id="subjectsTable" class="min-w-full text-sm">
+                            <thead class="bg-slate-800/50 text-gray-200">
+                                <tr id="subjectsHeader"></tr>
+                            </thead>
+                            <tbody id="subjectsBody" class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="text-2xl font-bold mb-4 text-center text-white">参考书对比</h4>
+                    <div class="overflow-x-auto">
+                        <table id="booksTable" class="min-w-full text-sm">
+                            <thead class="bg-slate-800/50 text-gray-200">
+                                <tr id="booksHeader"></tr>
+                            </thead>
+                            <tbody id="booksBody" class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="content-section">
+                        <h4 class="text-2xl font-bold mb-4 text-center text-white">学费对比</h4>
+                        <div class="chart-container">
+                            <canvas id="tuitionBar"></canvas>
+                        </div>
+                    </div>
+                    <div class="content-section">
+                        <h4 class="text-2xl font-bold mb-4 text-center text-white">2023-2025 分数线变化</h4>
+                        <div class="chart-container">
+                            <canvas id="scoreLine"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section">
+                    <h4 class="text-2xl font-bold mb-6 text-center text-white">题型与分值（各校）</h4>
+                    <div id="donutGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </div>
+            </div>
+
+            <div id="welcome-hint" class="content-section text-center">
+                <p class="text-lg text-gray-300">请从上方按层级选择至少一所学校，系统将自动生成对比分析。</p>
+            </div>
+        </section>
+
+        <section id="subjects-intro" class="mb-12">
+            <h3 class="section-title">科目对比介绍</h3>
+            <div class="content-section max-w-4xl mx-auto">
+                <p class="text-gray-300 leading-7">
+                    基于各校考试科目设置：
+                    <br>• <b>数学科目</b>总体分为<b>数学三</b>与<b>396经济类联考</b>两类。复旦、上交、上财（含经济学院A组）、华理、东华、上社科等采用数学三；华师大、同济、上大（悉尼商学院与经济学院）、上外、上外贸采用户396。
+                    <br>• <b>外语科目</b>以<b>英语二</b>为主，上海交通大学使用<b>英语一</b>；上外同时支持<b>小语种</b>（202/203）。
+                    <br>• <b>431金融学综合</b>为所有院校的核心专业课，但题型结构与权重差异较大：部分院校偏重<b>名词解释/简答</b>（如上外、华师大），部分强调<b>计算/论述</b>（如同济、华理），也有按<b>金融学/公司理财</b>模块分值的设置（如上交）。
+                </p>
+            </div>
+        </section>
+
+        <section id="mapping" class="mb-12">
+            <h3 class="section-title">金融学与CFA知识点对应</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="content-section">
+                    <h4 class="text-xl font-semibold mb-3 text-white text-center">金融学考研 ↔ CFA 对应表</h4>
+                    <div class="overflow-x-auto">
+                        <table id="financeMapping" class="min-w-full text-sm">
+                            <thead class="bg-slate-800/50 text-gray-200">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">考试内容</th>
+                                    <th class="px-4 py-2 text-left">CFA对应关系</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="content-section">
+                    <h4 class="text-xl font-semibold mb-3 text-white text-center">公司理财 ↔ CFA 对应表</h4>
+                    <div class="overflow-x-auto">
+                        <table id="corpFinMapping" class="min-w-full text-sm">
+                            <thead class="bg-slate-800/50 text-gray-200">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">考试内容</th>
+                                    <th class="px-4 py-2 text-left">CFA对应关系</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+        </section>
+    </main>
+
+    <footer class="glass-footer text-center py-6">
+        <p class="text-white">&copy; 2025 金融专硕对比工具</p>
+    </footer>
+    </div>
+
+    <script>
+        // ===================== 数据源（来自 考研信息.md） =====================
+        const schoolsData = {
+            fdu: {
+                id: 'fdu',
+                name: '复旦大学',
+                tier: 'top',
+                faculty: '经济学院',
+                subjects: ['101政治','204英语二','303数学三','431金融学综合'],
+                books: [
+                    '胡庆康《现代货币银行学教程》','姜波克《国际金融新编》','朱叶《公司金融》','刘红忠《投资学》','张金清《金融风险管理》'
+                ],
+                tuitionWanPerYear: 12.9,
+                questionTypes: [
+                    { label: '选择题', score: 30 },
+                    { label: '简答题', score: 36 },
+                    { label: '计算题', score: 60 },
+                    { label: '论述题', score: 24 }
+                ],
+                scores: { y2023: 395, y2024: 408, y2025: 365 },
+                color: '#60A5FA'
+            },
+            sjtu: {
+                id: 'sjtu',
+                name: '上海交通大学',
+                tier: 'top',
+                faculty: '安泰经济与管理学院',
+                subjects: ['101政治','201英语一','303数学三','431金融学综合'],
+                books: [
+                    '米什金《货币金融学》(商学院版)','罗斯《公司理财》第11版','胡庆康《货币银行学》','姜波克《国际金融》'
+                ],
+                tuitionWanPerYear: 9.9,
+                questionTypes: [
+                    { label: '金融学', score: 90 },
+                    { label: '公司理财', score: 60 }
+                ],
+                scores: { y2023: 360, y2024: 370, y2025: 340 },
+                color: '#34D399'
+            },
+            shufe_fin: {
+                id: 'shufe_fin',
+                name: '上海财经大学（金融学院）',
+                tier: 'top',
+                faculty: '金融学院（A/B/C组）',
+                subjects: ['101政治','204英语二','303数学三/396','431金融学综合'],
+                books: [
+                    '戴国强《货币金融学》','奚君羊《金融学》','罗斯《公司理财》','郭丽虹《公司金融学》','博迪《投资学》'
+                ],
+                tuitionWanPerYear: 11.4,
+                questionTypes: [
+                    { label: '选择题', score: 60 },
+                    { label: '计算题', score: 60 },
+                    { label: '论述题', score: 30 }
+                ],
+                scoreSeries: [
+                    { label: 'A组', values: [404, 389, 351] },
+                    { label: 'B组', values: [394, 389, 327] },
+                    { label: 'C组', values: [394, 393, 323] }
+                ],
+                color: '#F59E0B'
+            },
+            shufe_econ: {
+                id: 'shufe_econ',
+                name: '上海财经大学（经济学院A组）',
+                tier: 'top',
+                faculty: '经济学院（A组:金融计量）',
+                subjects: ['101政治','204英语二','303数学三','431金融学综合'],
+                books: ['同上'],
+                tuitionWanPerYear: 11.4,
+                questionTypes: [
+                    { label: '选择题', score: 60 },
+                    { label: '计算题', score: 60 },
+                    { label: '论述题', score: 30 }
+                ],
+                scores: { y2023: 389, y2024: 392, y2025: 360 },
+                color: '#A78BFA'
+            },
+            ecnu: {
+                id: 'ecnu',
+                name: '华东师范大学',
+                tier: '985',
+                faculty: '经济与管理学院',
+                subjects: ['101政治','204英语二','396经济类联考综合能力','431金融学综合'],
+                books: ['黄达《金融学》','荆新《财务管理学》','罗斯《公司理财》','蓝发钦《国际金融》'],
+                tuitionWanPerYear: 9.9,
+                questionTypes: [
+                    { label: '名词解释', score: 18 },
+                    { label: '简答题', score: 56 },
+                    { label: '计算题', score: 40 },
+                    { label: '论述题', score: 36 }
+                ],
+                scores: { y2023: 376, y2024: 368, y2025: 376 },
+                color: '#22D3EE'
+            },
+            tongji: {
+                id: 'tongji',
+                name: '同济大学',
+                tier: '985',
+                faculty: '经济与管理学院',
+                subjects: ['101政治','204英语二','396经济类联考综合能力','431金融学综合'],
+                books: ['米什金《货币金融学》第12版','博迪《金融学》第二版'],
+                tuitionWanPerYear: 10.4,
+                questionTypes: [
+                    { label: '选择题', score: 30 },
+                    { label: '名词解释', score: 30 },
+                    { label: '简答题', score: 40 },
+                    { label: '论述题', score: 20 },
+                    { label: '材料分析', score: 30 }
+                ],
+                scores: { y2023: 340, y2024: 352, y2025: 340 },
+                color: '#EF4444'
+            },
+            shu_sydney: {
+                id: 'shu_sydney',
+                name: '上海大学（悉尼商学院）',
+                tier: '211',
+                faculty: '悉尼商学院',
+                subjects: ['101政治','204英语二','396经济类联考综合能力','431金融学综合'],
+                books: ['李敏《现代货币银行学》','高鸿业《西方经济学》','陈信华《国际金融学》'],
+                tuitionWanPerYear: 7.5,
+                questionTypes: [
+                    { label: '选择题', score: 15 },
+                    { label: '判断题', score: 15 },
+                    { label: '名词解释', score: 15 },
+                    { label: '简答题', score: 30 },
+                    { label: '计算题', score: 40 },
+                    { label: '论述题', score: 35 }
+                ],
+                scores: { y2023: 346, y2024: 338, y2025: 338 },
+                color: '#10B981'
+            },
+            shu_econ: {
+                id: 'shu_econ',
+                name: '上海大学（经济学院）',
+                tier: '211',
+                faculty: '经济学院',
+                subjects: ['101政治','204英语二','396经济类联考综合能力','431金融学综合'],
+                books: ['同上'],
+                tuitionWanPerYear: 7.5,
+                questionTypes: [
+                    { label: '选择题', score: 15 },
+                    { label: '判断题', score: 15 },
+                    { label: '名词解释', score: 15 },
+                    { label: '简答题', score: 30 },
+                    { label: '计算题', score: 40 },
+                    { label: '论述题', score: 35 }
+                ],
+                scores: { y2023: 346, y2024: 338, y2025: 338 },
+                color: '#F97316'
+            },
+            ecust: {
+                id: 'ecust',
+                name: '华东理工大学',
+                tier: '211',
+                faculty: '商学院金融硕士(MF)教育中心',
+                subjects: ['101政治','204英语二','303数学三','431金融学综合'],
+                books: ['黄达《金融学》','罗斯《公司理财》'],
+                tuitionWanPerYear: 9.4,
+                questionTypes: [
+                    { label: '选择题', score: 40 },
+                    { label: '判断题', score: 40 },
+                    { label: '计算题', score: 30 },
+                    { label: '论述题', score: 40 }
+                ],
+                scores: { y2023: 364, y2024: 342, y2025: 345 },
+                color: '#06B6D4'
+            },
+            sisu: {
+                id: 'sisu',
+                name: '上海外国语大学',
+                tier: '211',
+                faculty: '国际金融贸易学院',
+                subjects: ['101政治','204英语二/202俄语/203日语等','396经济类联考综合能力','431金融学综合'],
+                books: ['黄达《金融学》','米什金《货币金融学》','罗斯《公司理财》'],
+                tuitionWanPerYear: 9.4,
+                questionTypes: [
+                    { label: '名词解释', score: 30 },
+                    { label: '简答题', score: 90 },
+                    { label: '论述题', score: 30 }
+                ],
+                scores: { y2023: 355, y2024: 361, y2025: 355 },
+                color: '#8B5CF6'
+            },
+            dhu: {
+                id: 'dhu',
+                name: '东华大学',
+                tier: '211',
+                faculty: '旭日工商管理学院',
+                subjects: ['101政治','204英语二','303数学三','431金融学综合'],
+                books: ['戴国强《货币金融学》','罗斯《公司理财精要》','陈雨露《公司理财》'],
+                tuitionWanPerYear: 8.4,
+                questionTypes: [
+                    { label: '判断题', score: 20 },
+                    { label: '选择题', score: 20 },
+                    { label: '简答题', score: 40 },
+                    { label: '计算题', score: 30 },
+                    { label: '论述题', score: 40 }
+                ],
+                scores: { y2023: 346, y2024: 355, y2025: 323 },
+                color: '#84CC16'
+            },
+            suibe: {
+                id: 'suibe',
+                name: '上海对外经贸大学',
+                tier: 'other',
+                faculty: '金融管理学院',
+                subjects: ['101政治','204英语二','396经济类联考','431金融学综合'],
+                books: ['米什金《货币金融学》','罗斯《公司理财》'],
+                tuitionWanPerYear: 7.9,
+                questionTypes: null,
+                scores: { y2023: 346, y2024: 338, y2025: 323 },
+                color: '#EAB308'
+            },
+            shaps: {
+                id: 'shaps',
+                name: '上海社会科学院',
+                tier: 'other',
+                faculty: '专业学位教育管理中心',
+                subjects: ['101政治','204英语二','303数学三','431金融学综合'],
+                books: ['胡庆康《现代货币银行学教程》','姜波克《国际金融》','朱叶《公司金融》','吴晓求/霍文文《证券投资学》'],
+                tuitionWanPerYear: 8.4,
+                questionTypes: null,
+                scores: { y2023: 346, y2024: 338, y2025: 323 },
+                color: '#FB7185'
+            }
+        };
+
+        const tiers = {
+            top: ['fdu', 'sjtu', 'shufe_fin', 'shufe_econ'],
+            '985': ['ecnu', 'tongji'],
+            '211': ['shu_sydney', 'shu_econ', 'ecust', 'sisu', 'dhu'],
+            other: ['suibe', 'shaps']
+        };
+
+        // 映射表数据（来自 考研信息.md）
+        const financeMappingData = [
+            ['一、货币与货币制度', '经济学 (国际)'],
+            ['二、利息和利率', '数量方法'],
+            ['三、外汇与汇率', '经济学 (国际)'],
+            ['四、金融市场与机构', '权益投资、衍生品投资'],
+            ['五、商业银行', '-'],
+            ['六、现代货币创造机制', '经济学 (宏观)'],
+            ['七、货币供求与均衡', '经济学 (宏观)'],
+            ['八、货币政策', '经济学 (宏观)'],
+            ['九、国际收支与国际资本流动', '经济学 (国际)'],
+            ['十、金融监管', '财务报表分析、权益投资、固定收益']
+        ];
+
+        const corpFinMappingData = [
+            ['一、公司财务概述', '财务报表分析'],
+            ['二、财务报表分析', '财务报表分析'],
+            ['三、长期财务规划', '财务报表分析'],
+            ['四、折现与价值', '公司金融'],
+            ['五、资本预算', '公司金融'],
+            ['六、风险与收益', '组合管理'],
+            ['七、加权平均资本成本', '公司金融'],
+            ['八、有效市场假说', '权益投资'],
+            ['九、资本结构与公司价值', '公司金融'],
+            ['十、公司价值评估', '权益投资']
+        ];
+
+        // ===================== DOM 与状态 =====================
+        const selectedSchoolIds = new Set();
+        let tuitionChart, scoreChart;
+        const donutCharts = new Map();
+
+        function $(id) { return document.getElementById(id); }
+
+        // 登录控制逻辑（参考 1.html）在 DOMContentLoaded 中初始化
+
+        // 渲染学校卡片
+        function renderSchoolSelectors() {
+            const containers = { top: $('tier-top'), '985': $('tier-985'), '211': $('tier-211'), other: $('tier-other') };
+            Object.entries(tiers).forEach(([tierKey, ids]) => {
+                const container = containers[tierKey];
+                container.innerHTML = ids.map(id => {
+                    const s = schoolsData[id];
+                    return `
+                        <div class="glass-card school-selector" data-id="${s.id}" style="border-color:${s.color}">
+                            <div class="check-badge hidden" style="background:${hexToRgba(s.color,0.18)};border-color:${hexToRgba(s.color,0.9)};color:${s.color}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 10-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" clip-rule="evenodd"/></svg>
+                            </div>
+                            <div>
+                                <h5 class="text-lg font-bold" style="color:${s.color}">${s.name}</h5>
+                                <p class="text-gray-400 mt-1 text-sm">${s.faculty}</p>
+                            </div>
+                            <div class="flex items-center justify-between mt-3 text-xs text-gray-300">
+                                <span>${s.subjects.join(' · ')}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            });
+
+            document.querySelectorAll('.school-selector').forEach(el => {
+                el.addEventListener('click', () => {
+                    const id = el.getAttribute('data-id');
+                    if (selectedSchoolIds.has(id)) {
+                        selectedSchoolIds.delete(id);
+                        el.classList.remove('selected');
+                        el.style.borderColor = 'var(--glass-border)';
+                        el.style.backgroundColor = '';
+                        const badge = el.querySelector('.check-badge');
+                        if (badge) badge.classList.add('hidden');
+                    } else {
+                        selectedSchoolIds.add(id);
+                        el.classList.add('selected');
+                        el.style.borderColor = schoolsData[id].color;
+                        el.style.backgroundColor = hexToRgba(schoolsData[id].color, 0.12);
+                        const badge = el.querySelector('.check-badge');
+                        if (badge) badge.classList.remove('hidden');
+                    }
+                    renderCompare();
+                });
+            });
+        }
+
+        // 科目与参考书表格
+        function renderTables(ids) {
+            const subjectsHeader = $('subjectsHeader');
+            const subjectsBody = $('subjectsBody');
+            const booksHeader = $('booksHeader');
+            const booksBody = $('booksBody');
+            subjectsHeader.innerHTML = '<th class="px-4 py-2 text-left">项目</th>' + ids.map(id => `<th class="px-4 py-2 text-left">${schoolsData[id].name}</th>`).join('');
+            booksHeader.innerHTML = subjectsHeader.innerHTML;
+
+            const subjectRow = `<tr><td class="px-4 py-3 text-gray-300">考试科目</td>${ids.map(id => `<td class=\"px-4 py-3\"><span class=\"text-gray-200\">${schoolsData[id].subjects.join('、')}</span></td>`).join('')}</tr>`;
+            const facultyRow = `<tr><td class="px-4 py-3 text-gray-300">院系/项目</td>${ids.map(id => `<td class=\"px-4 py-3 text-gray-200\">${schoolsData[id].faculty}</td>`).join('')}</tr>`;
+            subjectsBody.innerHTML = facultyRow + subjectRow;
+
+            const maxBooks = Math.max(...ids.map(id => (schoolsData[id].books || []).length));
+            let rowsHtml = '';
+            for (let i = 0; i < Math.max(1, maxBooks); i++) {
+                rowsHtml += `<tr><td class="px-4 py-3 text-gray-300">参考书${i+1}</td>` + ids.map(id => {
+                    const book = (schoolsData[id].books || [])[i] || '';
+                    return `<td class=\"px-4 py-3\"><span class=\"text-gray-200\">${book}</span></td>`;
+                }).join('') + '</tr>';
+            }
+            booksBody.innerHTML = rowsHtml;
+        }
+
+        // 学费柱状图
+        function renderTuition(ids) {
+            const ctx = $('tuitionBar').getContext('2d');
+            const labels = ids.map(id => schoolsData[id].name);
+            const data = ids.map(id => schoolsData[id].tuitionWanPerYear);
+            if (tuitionChart) tuitionChart.destroy();
+            tuitionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: '学费（万元/年）',
+                        data,
+                        backgroundColor: ids.map(id => hexToRgba(schoolsData[id].color, 0.6)),
+                        borderColor: ids.map(id => schoolsData[id].color),
+                        borderWidth: 1
+                    }]
+                },
+                options: chartCommonOptions({ indexAxis: 'x', maxX: null })
+            });
+        }
+
+        // 分数线折线图
+        function renderScores(ids) {
+            const ctx = $('scoreLine').getContext('2d');
+            const labels = ['2023', '2024', '2025'];
+            const datasets = [];
+            let maxScore = 0;
+            ids.forEach(id => {
+                const s = schoolsData[id];
+                if (s.scoreSeries) {
+                    s.scoreSeries.forEach((ser, idx) => {
+                        ser.values.forEach(v => { if (v > maxScore) maxScore = v; });
+                        datasets.push({
+                            label: `${s.name}-${ser.label}`,
+                            data: ser.values,
+                            fill: false,
+                            borderColor: s.color,
+                            borderDash: idx === 0 ? [] : [6, 4],
+                            tension: 0.2,
+                            pointBackgroundColor: s.color
+                        });
+                    });
+                } else {
+                    maxScore = Math.max(maxScore, s.scores.y2023, s.scores.y2024, s.scores.y2025);
+                    datasets.push({
+                        label: s.name,
+                        data: [s.scores.y2023, s.scores.y2024, s.scores.y2025],
+                        fill: false,
+                        borderColor: s.color,
+                        tension: 0.2,
+                        pointBackgroundColor: s.color
+                    });
+                }
+            });
+            if (scoreChart) scoreChart.destroy();
+            scoreChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: chartCommonOptions({
+                    scales: {
+                        y: {
+                            min: 300,
+                            max: Math.max(410, Math.ceil((maxScore + 10) / 10) * 10),
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            ticks: { color: '#cbd5e1' }
+                        },
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.08)' },
+                            ticks: { color: '#cbd5e1' }
+                        }
+                    }
+                })
+            });
+        }
+
+        // 题型环形图（每校一张）
+        function renderDonuts(ids) {
+            const grid = $('donutGrid');
+            grid.innerHTML = ids.map(id => {
+                const s = schoolsData[id];
+                const hasData = Array.isArray(s.questionTypes) && s.questionTypes.length > 0;
+                const canvasId = `donut_${id}`;
+                return `
+                    <div class="bg-slate-800/40 rounded-xl border border-slate-700/50 p-4">
+                        <h5 class="text-base font-semibold mb-3" style="color:${s.color}">${s.name}</h5>
+                        ${hasData ? `<div class=\"h-64\"><canvas id=\"${canvasId}\"></canvas></div>` : `<p class=\"text-gray-400\">暂无题型数据</p>`}
+                    </div>
+                `;
+            }).join('');
+
+            // 销毁旧图
+            donutCharts.forEach(ch => ch.destroy());
+            donutCharts.clear();
+
+            // 渲染新图
+            ids.forEach(id => {
+                const s = schoolsData[id];
+                if (!s.questionTypes) return;
+                const ctx = document.getElementById(`donut_${id}`).getContext('2d');
+                const labels = s.questionTypes.map(q => q.label);
+                const data = s.questionTypes.map(q => q.score);
+                const bg = generateSaturationPalette(s.color, labels.length);
+                const ch = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data, backgroundColor: bg, borderColor: s.color }] },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: '#e5e7eb' } } }
+                    }
+                });
+                donutCharts.set(id, ch);
+            });
+        }
+
+        // 公共图表选项（深色主题）
+        function chartCommonOptions(extra = {}) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255,255,255,0.08)' },
+                        ticks: { color: '#cbd5e1' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.08)' },
+                        ticks: { color: '#cbd5e1' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#e5e7eb' } },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#cbd5e1'
+                    }
+                },
+                ...extra
+            };
+        }
+
+        function hexToRgba(hex, alpha) {
+            const h = hex.replace('#','');
+            const bigint = parseInt(h, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // 颜色：将 Hex 转换为 HSL 并生成不同饱和度的调色板
+        function hexToHsl(hex) {
+            const h = hex.replace('#','');
+            const bigint = parseInt(h, 16);
+            const r = ((bigint >> 16) & 255) / 255;
+            const g = ((bigint >> 8) & 255) / 255;
+            const b = (bigint & 255) / 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let hDeg, s, l = (max + min) / 2;
+            if (max === min) { hDeg = 0; s = 0; }
+            else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: hDeg = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: hDeg = (b - r) / d + 2; break;
+                    case b: hDeg = (r - g) / d + 4; break;
+                }
+                hDeg /= 6;
+            }
+            return { h: Math.round(hDeg * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function hslaString(h, s, l, a = 0.95) {
+            return `hsla(${h}, ${s}%, ${l}%, ${a})`;
+        }
+
+        function generateSaturationPalette(baseHex, count) {
+            const { h, s, l } = hexToHsl(baseHex);
+            const palette = [];
+            const maxSat = Math.min(95, s + 20);
+            const minSat = Math.max(35, s - 35);
+            for (let i = 0; i < count; i++) {
+                const ratio = count === 1 ? 0.5 : i / (count - 1);
+                const sat = Math.round(minSat + (maxSat - minSat) * (1 - ratio * 0.85));
+                const light = Math.max(30, Math.min(70, l + Math.round((i - (count - 1) / 2) * 6)));
+                palette.push(hslaString(h, sat, light, 0.9));
+            }
+            return palette;
+        }
+
+        // 知识点映射表渲染 + 合并相同单元格
+        function renderMappingTables() {
+            function render(tableId, data) {
+                const tbody = document.querySelector(`#${tableId} tbody`);
+                tbody.innerHTML = data.map(([left, right]) => (
+                    `<tr><td class=\"px-4 py-2 text-gray-200\">${left}</td><td class=\"px-4 py-2 text-gray-200\">${right}</td></tr>`
+                )).join('');
+                mergeIdenticalCells(document.getElementById(tableId), 1); // 合并第二列相邻相同项
+            }
+            render('financeMapping', financeMappingData);
+            render('corpFinMapping', corpFinMappingData);
+        }
+
+        function mergeIdenticalCells(table, columnIndex) {
+            const rows = Array.from(table.tBodies[0].rows);
+            let prevText = null, prevCell = null, span = 1;
+            rows.forEach((row, idx) => {
+                const cell = row.cells[columnIndex];
+                const text = cell.textContent.trim();
+                if (prevText === text) {
+                    span += 1;
+                    prevCell.rowSpan = span;
+                    cell.style.display = 'none';
+                } else {
+                    prevText = text;
+                    prevCell = cell;
+                    span = 1;
+                }
+            });
+        }
+
+        // 主渲染控制
+        function renderCompare() {
+            const ids = Array.from(selectedSchoolIds);
+            const results = $('compare-results');
+            const hint = $('welcome-hint');
+            if (ids.length === 0) {
+                results.classList.add('hidden');
+                hint.classList.remove('hidden');
+                return;
+            }
+            hint.classList.add('hidden');
+            results.classList.remove('hidden');
+            renderTables(ids);
+            renderTuition(ids);
+            renderScores(ids);
+            renderDonuts(ids);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginModal = document.getElementById('login-modal');
+            const passwordInput = document.getElementById('password-input');
+            const loginButton = document.getElementById('login-button');
+            const errorMessage = document.getElementById('error-message');
+            const mainContent = document.getElementById('main-content');
+
+            function handleLogin() {
+                const val = (passwordInput.value || '').trim().toLowerCase();
+                if (val === 'luck666') {
+                    loginModal.style.opacity = '0';
+                    setTimeout(() => {
+                        loginModal.classList.add('hidden');
+                        mainContent.classList.remove('hidden');
+                        loginModal.style.opacity = '';
+                    }, 300);
+                } else {
+                    errorMessage.textContent = '密码错误，请重试。';
+                    passwordInput.focus();
+                }
+            }
+
+            loginButton.addEventListener('click', handleLogin);
+            passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleLogin(); });
+
+            renderSchoolSelectors();
+            renderMappingTables();
+        });
+    </script>
+</body>
+</html>
+
+
